@@ -9,6 +9,10 @@ The object of the game is to have the majority of disks turned to display your c
 
  ![预览](https://github.com/fuhuan1991/black_white/raw/master/12.png)
  
+ How to run:
  npm install
  
  npm run start
+ 
+ todo:
+ a new single player mode.
