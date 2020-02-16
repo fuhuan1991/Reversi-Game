@@ -1,6 +1,6 @@
 import React from 'react';
 import Square from './Square';
-import config from '../config.js';
+import config from './config.js';
 
 let SIZE = config.size;
 if (SIZE < 8) {
@@ -47,9 +47,23 @@ class Board extends React.Component {
     return rows;
   }
 
+  generateFinishPopup() {
+    const winner = this.props.number_of_O > this.props.number_of_X ? 'tail' : 'head';
+
+    return(
+      <div className="mask">
+        <div className="finish_popup">
+          <div className={winner}></div>
+          <span>{winner} is the winner!</span>
+        </div>
+      </div>
+    );
+  }
+
   render() {
     return (
       <div className="board">
+        {this.props.gameFinished && this.generateFinishPopup()}
         {this.generateRows()}
       </div>
     );
