@@ -1,4 +1,4 @@
-import config from '../config.js';
+import config from './config.js';
 let SIZE = config.size;
 if (SIZE < 8) {
 	console.log('最小尺寸为8*8');
@@ -18,7 +18,7 @@ if (SIZE%2 !== 0) {
    */
 function searchFunctionGenerator (dirction) {
 	if (Object.prototype.toString.call(dirction) !== '[object String]') {
-		throw new String('searchFunctionGenerator 的参数只能是字符串');
+		throw new Error('searchFunctionGenerator 的参数只能是字符串');
 	}
 
 	var nextTraget;
@@ -59,7 +59,7 @@ function searchFunctionGenerator (dirction) {
 			impasse = function(x,y) { return y===SIZE-1 };
 		break;
 		default:
-	  		throw 'searchFunctionGenerator: unknow dirction!';
+	  		throw Error('searchFunctionGenerator: unknow dirction!');
 	}
 	//Function nextTraget 搜索下一个目标格子的函数
 	//Function impasse 判断是否能够在此方向进一步搜索的函数

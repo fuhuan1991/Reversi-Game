@@ -1,0 +1,215 @@
+.board {
+  border: tan solid 12px;
+  border-top: #bda27e solid 12px;
+  border-left: #b19876 solid 12px;
+  border-bottom: #c9ad86 solid 12px;
+  box-shadow: 0px 0px 6px 5px rgba(58, 18, 13, 0), 0px 0px 0px 2px #c2a782, 0px 0px 0px 4px #a58e6f, 3px 4px 8px 5px rgba(0, 0, 0, 0.5);
+  background: #6e7376;
+  border-radius: 8px;
+  background: #231a09;
+  position: relative;
+
+  .mask {
+    width: 100%;
+    height: 100%;
+    /* background-color: rgba(0, 0, 0, 0.65); */
+    backdrop-filter: blur(5px);
+    position: absolute;
+    z-index: 1000;
+
+    .finish_popup {
+      background-color: rgba(0, 0, 0, 0.4);
+      padding-top: 24px;
+      margin: auto;
+      width: 500px;
+      height: 300px;
+      border-radius: 10px;
+      margin-top: 165px;
+      color: #cacaca;
+      font-size: 42px;
+      font-weight: bolder;
+
+      span {
+        display: block;
+        text-align: center;
+      }
+
+      .tail{
+        background-image: url(../img/t.png);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        background-position: center center;
+        height: 200px;
+        width: 200px;
+        margin: auto;
+      }
+
+      .head{
+        background-image: url(../img/h.png);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        background-position: center center;
+        height: 200px;
+        width: 200px;
+        margin: auto;
+      }
+    }
+  }
+}
+
+.board-row:after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
+.status {
+  margin: 10px 0px;
+  color: #ececec;
+  font-family: serif;
+}
+
+.coin_icon {
+  height: 30px;
+  width: 30px;
+  display: inline-block;
+  position: relative;
+  top: 7px;
+  left: 5px;
+}
+
+.coin_icon.tail {
+  background-image: url(../img/t.png);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center center;
+}
+
+.coin_icon.head {
+  background-image: url(../img/h.png);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center center;
+}
+
+.square {
+  color: #ececec;
+  transition: background 0.4s;
+  border: 2px solid #6e7376 ;
+  /* border-radius: 8px; */
+  float: left;
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 34px;
+  height: 80px;
+  margin-right: -1px;
+  margin-top: -1px;
+  padding: 0;
+  text-align: center;
+  width: 80px;
+  cursor: pointer;
+  font-family: serif;
+  background-color: transparent;
+}
+
+.square.available {
+  background: #39B54A;
+}
+
+.square:focus {
+  outline: none;
+}
+
+.square .inner {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+}
+
+.square.head .inner {
+  background-image: url(../img/h.png);
+  background-repeat: no-repeat;
+  background-size: 85% 85%;
+  background-position: center center;
+}
+
+.square.tail .inner {
+  background-image: url(../img/t.png);
+  background-repeat: no-repeat;
+  background-size: 85% 85%;
+  background-position: center center;
+}
+
+.kbd-navigation .square:focus {
+  background: #ddd;
+}
+
+.game {
+  display: flex;
+  flex-direction: row;
+  min-height: 600px;
+  min-width: 600px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.game-info {
+  margin-left: 20px;
+}
+
+.clear{
+  position: absolute;
+  width: 200px;
+  height: 40px;
+  font-size: 18px;
+  font-family: serif;
+  font-weight: bolder;
+  left: 450px;
+  bottom: 63px;
+  border-radius: 5px;
+  background-color: #ececec;
+  color: #231a09;
+  cursor: pointer;
+}
+
+.game .scores {
+  /* background-color: white; */
+  width: 200px;
+  height: 600px;
+  position: absolute;
+  top: 68px;
+  left: 680px;
+  display: flex;
+  color: #cacaca;
+  font-family: serif;
+  font-size: 42px;
+}
+
+.game .scores .head{
+  background-image: url(../img/h.png);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center center;
+  width: 80px;
+  height: 80px;
+  position: absolute;
+}
+
+.game .scores .tail{
+  background-image: url(../img/t.png);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center center;
+  width: 80px;
+  height: 80px;
+  position: absolute;
+}
+
+
+
+
+
+
+
+
+
