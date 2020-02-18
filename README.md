@@ -7,7 +7,7 @@ The object of the game is to have the majority of disks turned to display your c
 
  https://en.wikipedia.org/wiki/Reversi
 
- ![预览](https://github.com/fuhuan1991/Reversi-Game/blob/master/12.png)
+ ![预览](https://github.com/fuhuan1991/Reversi-Game/blob/master/p12.png)
  
  How to run:
  npm install
