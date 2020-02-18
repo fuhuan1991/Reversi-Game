@@ -1,141 +1,193 @@
 
 import React from 'react';
 import './style/game.scss';
-import Board from './Board.jsx';
+import Board from './Board.tsx';
 import Scores from './Scores.jsx';
-import Search from './search.js';
+import Search from './search';
 import config from './config.js';
+import { pickLocation } from './auto';
+import { getRival } from './util';
 
 let SIZE = config.size;
 if (SIZE < 8) {
-	console.log('最小尺寸为8*8');
+	console.log('minium size is 8*8');
 	SIZE = 8;
 }else if(SIZE > 16) {
-	console.log('最大尺寸为16*16');
+	console.log('maximum size is 16*16');
 	SIZE = 16;
 }
 if (SIZE%2 !== 0) {
-	console.log('期盼尺寸必须为偶数');
+	console.log('length must be even');
 	SIZE++;
 }
 
 class Game extends React.Component {
-  initial_currentState() {
-  	let a0 = Array(SIZE).fill(null);
+  initialCurrentState() {
+  	let temp = Array(SIZE).fill(null);
   	let board = [];
   	for (let i=0; i<=SIZE-1; i++){
-  		board[i] = a0.slice(0);
+  		board[i] = temp.slice(0);
   	}
-  	// 初始化的4枚棋子
+  	// initialize 4 pieces (X is head)
     board[SIZE/2 - 1][SIZE/2 - 1] = 'X';
     board[SIZE/2 - 1][SIZE/2] = 'O';
     board[SIZE/2][SIZE/2 - 1] = 'O';
     board[SIZE/2][SIZE/2] = 'X'; 
-    // board[7][6] = 'X'
-    // board[7][7] = 'O'
+
+    // board[7][7] = 'O';
+    // board[0][0] = 'X';
+    // board[0][1] = 'O';
+    // board[0][7] = 'X';
+    // board[1][7] = 'O';
+    // board[0][2] = 'O';
+    // board[7][6] = 'X';
     return board;
   }
 
-  initial_currentAvailabeState() {
-    let a0 = Array(SIZE).fill(null);
+  initialCurrentAvailabeState(initialBoard) {
+    let temp = Array(SIZE).fill(null);
   	let board = [];
   	for (let i=0; i<=SIZE-1; i++){
-  		board[i] = a0.slice(0);
+  		board[i] = temp.slice(0);
   	}
-    board[SIZE/2-2][SIZE/2-1] = true;
-    board[SIZE/2 - 1][SIZE/2-2] = true;
-    board[SIZE/2][SIZE/2+1] = true;
-    board[SIZE/2+1][SIZE/2] = true;
-    // board[7][5] = true;
+
+    const { availableState } = Search.searchAvailable('X', initialBoard);
+    for (let i = 0; i <= SIZE-1; i++) {
+      for (let j = 0; j <= SIZE-1; j++) {
+        if (availableState[i][j]) board[i][j] = true;
+      }
+    }
 
     return board;
   }
 
   constructor(props) {
     super(props);
+    const initialBoard = this.initialCurrentState();
     this.state = {
-      _currentState: this.initial_currentState(),//目前所有棋子位置
-      _currentAvailabeState: this.initial_currentAvailabeState(),//此时可以落子的位置
-      _isForX: false,//此时落子的是否为X
-      _numberO: 2,//O棋子得到数量
-      _numberX: 2,//X棋子的数量
-      _gameFinished: false,//是否已经分出胜负（所有格子都占满）
+      _initialization: true,
+      _single: true,
+      _currentState: initialBoard, // current location
+      _currentAvailabeState: this.initialCurrentAvailabeState(initialBoard), // available locations
+      _isForX: false, // is current piece a X? 
+      _numberO: 2, // the number of Os
+      _numberX: 2, // the number of Xs
+      _gameFinished: false,
+      _doubleMove: false
     };
-    window.xx = () => {
-      this.setState({
-        _gameFinished: true,
-      });
-    }
   }
 
   handleClick(x,y) { 
-  	// console.log('click',x,y);
-    if(this.state._currentState[x][y]){
+    // cannot place a piece on another one
+    if (this.state._currentState[x][y]){
       console.log('occupied!');
       return false;
-    }
-    else if(this.state._gameFinished){
+    } else if(this.state._gameFinished){
+      // cannot place a piece outside available zone
       console.log('game is over!');
       return false;
+    } else if(this.state._isForX && this.state._single) {
+      // in single mode, human player is (O)tail
+      console.log('not your turn!');
+      return false;
     }
-
-    let currentToken = this.state._isForX? 'X' : 'O';//判断此次落子是X还是O
+    if (this.state._currentAvailabeState[x][y]) this.land(x, y, this.state._single); 
+  }
+  // put down a piece and change state
+  land (x, y, autoMove) {
+    let currentToken = this.state._isForX? 'X' : 'O';
     let opponent = this.state._isForX? 'O':'X';
-    let tempState = this.state._currentState;//拷贝目前棋盘状态
+    let tempState = this.state._currentState; // copy current board
     let result = {};
-    let searchAvailableData = {};
+    let nextPlayersMoves = {};
     let points = {};
     let finishOrNot = false;
 
-    if(this.state._currentAvailabeState[x][y]){
-      //如果这个点击的格子可以落子则进入结果分析阶段
-      result = Search.SearchForReversalPieces(x,y,opponent,tempState);
-      //修改棋盘状态，也就是记录此次落子
-        tempState[x][y] = currentToken;
+    result = Search.SearchForReversiblePieces(x, y, opponent, tempState);
+    // change board state, record the current move
+    tempState[x][y] = currentToken;
 
-        //修改棋盘状态，反转对手棋子
-        for (let i = result.changeList.length - 1; i >= 0; i--) {
-          let temp_x = result.changeList[i].x;
-          let temp_y = result.changeList[i].y;
-          tempState[temp_x][temp_y] = currentToken;
-        };
+    // change board state, reverse opponent's pieces
+    for (let i = result.length - 1; i >= 0; i--) {
+      let temp_x = result[i][0];
+      let temp_y = result[i][1];
+      tempState[temp_x][temp_y] = currentToken;
+    };
 
-        //重新计算可以落子的区域
-        searchAvailableData = Search.searchAvailable(currentToken,tempState);
-        
-        //计算双方棋子数量
-        points = Search.CaculatePoints(tempState);
+    // calculate the available locations for next player
+    nextPlayersMoves = Search.searchAvailable(currentToken, tempState);
+    // count piece numbers
+    points = Search.CaculatePoints(tempState);
 
-        //inverse side
-        let isForXNext = !this.state._isForX;
+    // inverse side
+    let isXNext = !this.state._isForX;
+    let nextPlayersAvailabeState = nextPlayersMoves.availableState;
+    let doubleMove = false;
 
-        //判断游戏是否结束
-        if( (points.X + points.O) === 64){
-          finishOrNot = true;
-        } else if( searchAvailableData.noMoreMove ){
-          finishOrNot = true;
-          // same side move twice
-          // isForXNext = this.state._isForX;
-          // searchAvailableData = Search.searchAvailable(currentToken === 'X' ? 'O' : 'X', tempState);
+    // check finish
+    if( (points.X + points.O) === 64){
+      // board full
+      finishOrNot = true;
+      autoMove = false;
+    } else if( nextPlayersMoves.noMoreMove ){
+      const currentPlayersMoves = Search.searchAvailable(getRival(currentToken), tempState);
+      if (currentPlayersMoves.noMoreMove) {
+        // both player cannot make any move, game over
+        finishOrNot = true;
+        autoMove = false;
+      } else {
+        // player 1 make a move, player 2 cannot move, but player 1 can move again
+        if (this.state._single) {
+          if (this.state._isForX) {
+            console.log('computer double move')
+            autoMove = true;
+            isXNext = this.state._isForX;
+            nextPlayersAvailabeState = currentPlayersMoves.availableState;
+            doubleMove = true;
+          } else {
+            console.log('human double move');
+            autoMove = false;
+            isXNext = this.state._isForX;
+            nextPlayersAvailabeState = currentPlayersMoves.availableState;
+            doubleMove = true;
+          }
+        } else {
+          isXNext = this.state._isForX;
+          nextPlayersAvailabeState = currentPlayersMoves.availableState;
+          doubleMove = true;
         }
+      }
+    }
 
-        //正式修改状态
-        this.setState({
-            _currentState: tempState,
-            _currentAvailabeState: searchAvailableData.availableState,
-            _isForX: isForXNext,
-            _numberO: points.O,
-            _numberX: points.X,
-            _gameFinished: finishOrNot,
-        });
-    };  
+    if (autoMove) {
+      const p = new Promise((resolve, reject) => {
+        setTimeout(() => resolve(), 1000);
+      });
+      p.then(()=>{
+        this.computerMove();
+      });
+    }
+
+
+    // change state
+    this.setState({
+      _currentState: tempState,
+      _currentAvailabeState: nextPlayersAvailabeState,
+      _isForX: isXNext,
+      _numberO: points.O,
+      _numberX: points.X,
+      _gameFinished: finishOrNot,
+      _doubleMove: doubleMove,
+    });
   }
 
   clearBoard(){
-    let tempState = this.initial_currentState();
-    let tempAvailabe = this.initial_currentAvailabeState();
+    let tempState = this.initialCurrentState();
+    let tempAvailabe = this.initialCurrentAvailabeState(tempState);
 
     this.setState({
+      _initialization: true,
+      _single: true,
       _currentState: tempState,
       _currentAvailabeState: tempAvailabe,
       _isForX: false,
@@ -145,44 +197,73 @@ class Game extends React.Component {
     });
   }
 
+  handleModeSelection = (single) => {
+    this.setState({
+      _single: single,
+      _initialization: false,
+    });
+  }
+
+  computerMove() {
+    const pos = pickLocation('O', this.state._currentState);
+    this.land(pos[0], pos[1], false);
+  }
+
   render() {
     let nextPlayer = "";
     let status = "";
 
-    if(this.state._gameFinished){
-      if(this.state._numberO > this.state._numberX){
+    if (this.state._gameFinished){
+      if (this.state._numberO > this.state._numberX){
         status = "winner is tail!";
-      }
-      else if( this.state._numberO < this.state._numberX ){
+      } else if ( this.state._numberO < this.state._numberX ){
         status = "winner is head!";
-      }
-      else{
+      } else {
         status = "want a second round?";
       }
-    }
-    else{
+    } else if (this.state._doubleMove) {
+      const doubleMovePlayer = this.state._isForX? "head" : "tail";
+      const theOther = this.state._isForX? "tail" : "head";
+      status = `${theOther} has no moves, so ${doubleMovePlayer} moves again.`;
+    } else{
       nextPlayer = this.state._isForX? "head" : "tail";
       status = "Current player: " + nextPlayer;
     }
 
+    ///////test////////////////////////////////////
+    window.move = () => {
+      const pos = pickLocation('O', this.state._currentState);
+      this.land(pos[0], pos[1], false);
+    }
+
+    ///////////////////////////////////////////////
+
     return (
-      <div className="game">
-        <div className="game-board">
-          <div className="status white_font" style={{display: 'inline-block'}}>{status}</div>
-          <span className={this.state._isForX? 'coin_icon head' : 'coin_icon tail'}></span>
-          <Board currentState={this.state._currentState} 
-                 handleClick={(i,j) => this.handleClick(i,j)}
-                 currentAvailabeState={this.state._currentAvailabeState}
-                 gameFinished = {this.state._gameFinished}  
-                 number_of_O = {this.state._numberO}
-                 number_of_X = {this.state._numberX}    
-          />
-          <Scores x_number={this.state._numberX} o_number={this.state._numberO} />
-          <div className="status white_font">number of "tail"s: {this.state._numberO}</div>
-          <div className="status white_font">number of "head"s: {this.state._numberX}</div>
+      <React.Fragment>
+        <div className="status white_font" >
+          If you play alone, you play as tail and you move first, computer play as head.
         </div>
-        <button className='clear' onClick={() => this.clearBoard()}>CLEAR</button>
-      </div>
+        <div className="game">
+          <div className="game-board">
+            <div className="status white_font" style={{display: 'inline-block'}}>{status}</div>
+            <span className={this.state._isForX? 'coin_icon head' : 'coin_icon tail'}></span>
+            <Board 
+              initialization = {this.state._initialization}
+              currentState={this.state._currentState} 
+              currentAvailabeState={this.state._currentAvailabeState}
+              gameFinished = {this.state._gameFinished}  
+              number_of_O = {this.state._numberO}
+              number_of_X = {this.state._numberX}   
+              handleClick={(i,j) => this.handleClick(i,j)}
+              handleModeSelection={this.handleModeSelection} 
+            />
+            <Scores x_number={this.state._numberX} o_number={this.state._numberO} />
+            <div className="status white_font">number of "tail"s: {this.state._numberO}</div>
+            <div className="status white_font">number of "head"s: {this.state._numberX}</div>
+          </div>
+          <button className='clear' onClick={() => this.clearBoard()}>RESET</button>
+        </div>
+      </React.Fragment>
     );
   }
 };
