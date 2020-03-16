@@ -5,6 +5,8 @@ Players take turns placing disks on the board with their assigned color facing u
 
 The object of the game is to have the majority of disks turned to display your color when the last playable empty square is filled.
 
+This game contains both 1 player mode and 2 players mode.
+
  https://en.wikipedia.org/wiki/Reversi
 
  ![预览](https://github.com/fuhuan1991/Reversi-Game/blob/master/p12.png)
@@ -15,4 +17,7 @@ The object of the game is to have the majority of disks turned to display your c
  npm run start
  
  todo:
- a new single player mode.
+ build a stronger AI for signle player mode
+ 
+ Try it!
+ http://huan-fu.us-east-2.elasticbeanstalk.com/#/game
