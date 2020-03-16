@@ -1,6 +1,6 @@
 import React from 'react';
 import Square from './Square';
-import config from './config.js';
+import config from './config';
 
 let SIZE = config.size;
 if (SIZE < 8) {

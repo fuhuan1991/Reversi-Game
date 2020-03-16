@@ -1,4 +1,4 @@
-import config from './config.js';
+import config from './config';
 import { getRival } from './util';
 import Search from './search';
 
@@ -20,8 +20,7 @@ if (SIZE % 2 !== 0) {
 export const pickLocation = (opponent: string, currentState: Array<Array<string | null>>) => {
   const possibleMoves: Array<{value: number, pos: coor}> = [];
   let maxValue: number = 0;
-  let finalMove: coor|null= null;
-
+  let finalMove: coor = [0, 0];
 
   for (let i = SIZE - 1; i >= 0; i--) {
     for (let j = SIZE - 1; j >= 0; j--) {

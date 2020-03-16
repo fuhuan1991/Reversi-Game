@@ -1,12 +1,27 @@
 
 import React from 'react';
 import './style/game.scss';
-import Board from './Board.tsx';
+import Board from './Board';
 import Scores from './Scores.jsx';
 import Search from './search';
-import config from './config.js';
+import config from './config';
 import { pickLocation } from './auto';
 import { getRival } from './util';
+
+type BOARD = Array<Array<string>>;
+interface IProps {}
+
+interface IState {
+  _currentState: BOARD,
+  _initialization: boolean,
+  _single: boolean,
+  _currentAvailabeState: BOARD, // available locations
+  _isForX: boolean, // is current piece a X? 
+  _numberO: number, // the number of Os
+  _numberX: number, // the number of Xs
+  _gameFinished: boolean,
+  _doubleMove: boolean,
+}
 
 let SIZE = config.size;
 if (SIZE < 8) {
@@ -21,7 +36,9 @@ if (SIZE%2 !== 0) {
 	SIZE++;
 }
 
-class Game extends React.Component {
+class Game extends React.Component<IProps, IState> {
+
+  // setup the initial pieces on the board
   initialCurrentState() {
   	let temp = Array(SIZE).fill(null);
   	let board = [];
@@ -33,18 +50,11 @@ class Game extends React.Component {
     board[SIZE/2 - 1][SIZE/2] = 'O';
     board[SIZE/2][SIZE/2 - 1] = 'O';
     board[SIZE/2][SIZE/2] = 'X'; 
-
-    // board[7][7] = 'O';
-    // board[0][0] = 'X';
-    // board[0][1] = 'O';
-    // board[0][7] = 'X';
-    // board[1][7] = 'O';
-    // board[0][2] = 'O';
-    // board[7][6] = 'X';
     return board;
   }
 
-  initialCurrentAvailabeState(initialBoard) {
+  // calculate all the possible available positions 
+  initializeCurrentAvailabeState(initialBoard: BOARD) {
     let temp = Array(SIZE).fill(null);
   	let board = [];
   	for (let i=0; i<=SIZE-1; i++){
@@ -61,14 +71,14 @@ class Game extends React.Component {
     return board;
   }
 
-  constructor(props) {
+  constructor(props: any) {
     super(props);
     const initialBoard = this.initialCurrentState();
     this.state = {
       _initialization: true,
       _single: true,
       _currentState: initialBoard, // current location
-      _currentAvailabeState: this.initialCurrentAvailabeState(initialBoard), // available locations
+      _currentAvailabeState: this.initializeCurrentAvailabeState(initialBoard), // available locations
       _isForX: false, // is current piece a X? 
       _numberO: 2, // the number of Os
       _numberX: 2, // the number of Xs
@@ -77,7 +87,7 @@ class Game extends React.Component {
     };
   }
 
-  handleClick(x,y) { 
+  handleClick(x: number,y: number) { 
     // cannot place a piece on another one
     if (this.state._currentState[x][y]){
       console.log('occupied!');
@@ -93,14 +103,15 @@ class Game extends React.Component {
     }
     if (this.state._currentAvailabeState[x][y]) this.land(x, y, this.state._single); 
   }
+
   // put down a piece and change state
-  land (x, y, autoMove) {
+  land (x: number, y: number, autoMove: boolean) {
     let currentToken = this.state._isForX? 'X' : 'O';
     let opponent = this.state._isForX? 'O':'X';
     let tempState = this.state._currentState; // copy current board
-    let result = {};
-    let nextPlayersMoves = {};
-    let points = {};
+    let result;
+    let nextPlayersMoves;
+    let points;
     let finishOrNot = false;
 
     result = Search.SearchForReversiblePieces(x, y, opponent, tempState);
@@ -183,7 +194,7 @@ class Game extends React.Component {
 
   clearBoard(){
     let tempState = this.initialCurrentState();
-    let tempAvailabe = this.initialCurrentAvailabeState(tempState);
+    let tempAvailabe = this.initializeCurrentAvailabeState(tempState);
 
     this.setState({
       _initialization: true,
@@ -197,7 +208,7 @@ class Game extends React.Component {
     });
   }
 
-  handleModeSelection = (single) => {
+  handleModeSelection = (single: boolean) => {
     this.setState({
       _single: single,
       _initialization: false,
@@ -231,11 +242,10 @@ class Game extends React.Component {
     }
 
     ///////test////////////////////////////////////
-    window.move = () => {
-      const pos = pickLocation('O', this.state._currentState);
-      this.land(pos[0], pos[1], false);
-    }
-
+    // window.move = () => {
+    //   const pos = pickLocation('O', this.state._currentState);
+    //   this.land(pos[0], pos[1], false);
+    // }
     ///////////////////////////////////////////////
 
     return (
@@ -254,7 +264,7 @@ class Game extends React.Component {
               gameFinished = {this.state._gameFinished}  
               number_of_O = {this.state._numberO}
               number_of_X = {this.state._numberX}   
-              handleClick={(i,j) => this.handleClick(i,j)}
+              handleClick={(i: number, j: number) => this.handleClick(i,j)}
               handleModeSelection={this.handleModeSelection} 
             />
             <Scores x_number={this.state._numberX} o_number={this.state._numberO} />
