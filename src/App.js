@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Game from './game/Game';
+import Game from './game/Game.tsx';
 import './style.scss';
 
 class App extends Component {

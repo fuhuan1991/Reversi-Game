@@ -5,15 +5,15 @@ type coor = Array<number>;
 
 let SIZE = config.size;
 if (SIZE < 8) {
-  console.log('最小尺寸为8*8');
+  console.log('min size is 8*8');
   SIZE = 8;
 } else if (SIZE > 16) {
-  console.log('最大尺寸为16*16');
+  console.log('max size is 16*16');
   SIZE = 16;
 }
 if (SIZE % 2 !== 0) {
-  console.log('期盼尺寸必须为偶数');
-  SIZE++;
+  console.log('size must be an even number');
+  SIZE = 8;
 }
 
 const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]];

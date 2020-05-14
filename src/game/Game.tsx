@@ -45,7 +45,7 @@ class Game extends React.Component<IProps, IState> {
   	for (let i=0; i<=SIZE-1; i++){
   		board[i] = temp.slice(0);
   	}
-  	// initialize 4 pieces (X is head)
+  	// initialize 4 pieces (X is head, O is tail)
     board[SIZE/2 - 1][SIZE/2 - 1] = 'X';
     board[SIZE/2 - 1][SIZE/2] = 'O';
     board[SIZE/2][SIZE/2 - 1] = 'O';
@@ -89,7 +89,7 @@ class Game extends React.Component<IProps, IState> {
 
   handleClick(x: number,y: number) { 
     // cannot place a piece on another one
-    if (this.state._currentState[x][y]){
+    if (this.state._currentState[x][y] === 'O' || this.state._currentState[x][y] === 'X'){
       console.log('occupied!');
       return false;
     } else if(this.state._gameFinished){
@@ -178,7 +178,6 @@ class Game extends React.Component<IProps, IState> {
         this.computerMove();
       });
     }
-
 
     // change state
     this.setState({

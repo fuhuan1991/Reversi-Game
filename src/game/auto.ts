@@ -3,21 +3,22 @@ import { getRival } from './util';
 import Search from './search';
 
 type coor = Array<number>;
+type gameState = Array<Array<string | null>>;
 
 let SIZE = config.size;
 if (SIZE < 8) {
-  console.log('最小尺寸为8*8');
+  console.log('min size is 8*8');
   SIZE = 8;
 } else if (SIZE > 16) {
-  console.log('最大尺寸为16*16');
+  console.log('max size is 16*16');
   SIZE = 16;
 }
 if (SIZE % 2 !== 0) {
-  console.log('期盼尺寸必须为偶数');
-  SIZE++;
+  console.log('size must be an even number');
+  SIZE = 8;
 }
 
-export const pickLocation = (opponent: string, currentState: Array<Array<string | null>>) => {
+export const pickLocation = (opponent: string, currentState: gameState) => {
   const possibleMoves: Array<{value: number, pos: coor}> = [];
   let maxValue: number = 0;
   let finalMove: coor = [0, 0];
