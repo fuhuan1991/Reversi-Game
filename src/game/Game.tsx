@@ -105,6 +105,7 @@ class Game extends React.Component<IProps, IState> {
   }
 
   // put down a piece and change state
+  // If autoMove is true, computer shall be the next one to move
   land (x: number, y: number, autoMove: boolean) {
     let currentToken = this.state._isForX? 'X' : 'O';
     let opponent = this.state._isForX? 'O':'X';
@@ -141,13 +142,16 @@ class Game extends React.Component<IProps, IState> {
       finishOrNot = true;
       autoMove = false;
     } else if( nextPlayersMoves.noMoreMove ){
+      // After current player's move, next player cannot make a move.
+      // There are several different situations.
       const currentPlayersMoves = Search.searchAvailable(getRival(currentToken), tempState);
       if (currentPlayersMoves.noMoreMove) {
         // both player cannot make any move, game over
         finishOrNot = true;
         autoMove = false;
       } else {
-        // player 1 make a move, player 2 cannot move, but player 1 can move again
+        // After player 1 made a move, player 2 cannot move, but player 1 can still make a move
+        // Thus, player 1 moves again
         if (this.state._single) {
           if (this.state._isForX) {
             console.log('computer double move')

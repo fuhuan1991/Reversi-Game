@@ -25,7 +25,7 @@ export const isInBoundary = (o: Array<number>) => {
 }
 
 var Search = {
-	// search for the pieces that can be reversed by current move
+	// search for the pieces that can be reversed by a centain move
   SearchForReversiblePieces: (x: number, y: number, opponent: string, currentState: Array<Array<string|null>>) => {
     const finalResult: Array<coor> = [];
     const initialTarget = [x, y];
@@ -59,8 +59,9 @@ var Search = {
     return finalResult;
   },
 
-	searchAvailable:function(opponent: string, currentState: Array<Array<string|null>>){//搜索全部的方格，找出其中可以落子方格。
-// console.log('searchAvailable', opponent)
+  // Search all positions, find out the ones you can make your next move.
+	searchAvailable:function(opponent: string, currentState: Array<Array<string|null>>){
+
 		let noMoreMove = true;
 
 		let temp = Array(SIZE).fill(null);
