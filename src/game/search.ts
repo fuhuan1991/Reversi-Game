@@ -39,7 +39,6 @@ var Search = {
       target[1] += dir[1];
   
       while (isInBoundary(target)) {
-        // console.log(target)
         if (currentState[target[0]][target[1]] === null) {
           break;
         } else if (currentState[target[0]][target[1]] === friendly) {
@@ -47,7 +46,6 @@ var Search = {
           break;
         } else {
           // encounter a opponent's piece
-          // console.log('target', target)
           temp.push([...target]);
         }
         target[0] += dir[0];

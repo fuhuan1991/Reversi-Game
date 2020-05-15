@@ -176,7 +176,7 @@ class Game extends React.Component<IProps, IState> {
 
     if (autoMove) {
       const p = new Promise((resolve, reject) => {
-        setTimeout(() => resolve(), 1000);
+        setTimeout(() => resolve(), 400);
       });
       p.then(()=>{
         this.computerMove();
