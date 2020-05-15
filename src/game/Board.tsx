@@ -15,9 +15,11 @@ if (SIZE%2 !== 0) {
 	SIZE++;
 }
 
+type availableState = Array<Array<boolean>>;
+
 interface PropsType {
   currentState: Array<Array<string | null>>,
-  currentAvailabeState: Array<Array<string|null>>, // the positions that can land a piece
+  currentAvailabeState: availableState, // the positions that can land a piece
   gameFinished: boolean, // is the game over
   initialization: boolean, // is the game in the initial stage
   number_of_O: number, // number of pieces of O(head)

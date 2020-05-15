@@ -20,72 +20,43 @@ if (SIZE % 2 !== 0) {
   SIZE = 8;
 }
 
-// export const pickLocation = (opponent: string, currentState: gameState) => {
-//   const possibleMoves: Array<{value: number, pos: coor}> = [];
-//   let maxValue: number = 0;
-//   let finalMove: coor = [0, 0];
-
-//   for (let i = SIZE - 1; i >= 0; i--) {
-//     for (let j = SIZE - 1; j >= 0; j--) {
-//       let result = Search.SearchForReversiblePieces(i, j, opponent, currentState);
-//       if (result.length > 0 && !currentState[i][j]) {
-//         let value = result.length;
-
-//         if (atCorner(i, j)) {
-//           value = Infinity;
-//         } else if (atEdge(i, j)){
-//           value = value * 2;
-//         }
-
-//         if (value > maxValue) {
-//           finalMove = [i, j];
-//           maxValue = value;
-//         }
-
-//         possibleMoves.push({
-//           pos: [i, j],
-//           value: value,
-//         });
-//       }
-//     };
-//   };
-//   // console.log(possibleMoves);
-//   return finalMove;
-// }
-
+/*
+ * Given a state and an opponent, choice a best move.
+ * We assume that there is at least one possible move.
+*/
 export const pickLocation = (opponent: string, state: gameState): coor => {
 
   let maxScore: number = -Infinity;
   let finalMove: coor = [0, 0];
   let currentPlayer: string = getRival(opponent);
+  const possibleMoves: Array<move> = Search.searchAvailableAuto(currentPlayer, state);
 
-  for (let i = 0; i < SIZE; i++) {
-    for (let j = 0; j < SIZE; j++) {
-      if (state[i][j] !== null) continue;
-      let reversibles = Search.SearchForReversiblePieces(i, j, opponent, state);
+  if (possibleMoves.length === 1) {
+    // only one choice, no need to maxmin tree.
+    return possibleMoves[0].pos;
+  } else {
+    for (let move of possibleMoves) {
+      let x = move.pos[0];
+      let y = move.pos[1];
 
-      if (reversibles.length > 0) {
-        // console.log(i,j)
-        // If there is corner to grab, grab it.
-        if (atCorner(i, j)) return [i, j];
+      // If there is corner to grab, grab it.
+      if (atCorner(x, y)) return [x, y];
+      // generate new state
+      const newState: gameState = cloneState(state);
+      for (let p of move.reversibles) {
+        newState[p[0]][p[1]] = currentPlayer;
+      }
+      newState[x][y] = currentPlayer;
+      // use recurive function to calculate score
+      let score = getScoreFromState_R(newState, currentPlayer, 3);
 
-        // generate new state
-        const newState: gameState = cloneState(state);
-        for (let p of reversibles) {
-          newState[p[0]][p[1]] = currentPlayer;
-        }
-        newState[i][j] = currentPlayer;
-
-        // use recurive function to calculate score
-        let score = getScoreFromState_R(newState, currentPlayer, 4);
-        // console.log(score)
-        if (score > maxScore) {
-          maxScore = score;
-          finalMove = [i, j];
-        }
+      if (score > maxScore) {
+        maxScore = score;
+        finalMove = [x, y];
       }
     }
   }
+  console.log(finalMove)
   return finalMove;
 }
 
@@ -106,23 +77,15 @@ const getScoreFromState_R = (state: gameState, currentPlayer: string, iCounter: 
   if (iCounter === 0 || isFinalState(state)) {
     return getScoreFromState_S(state);
   }
-
-  const possibleMoves: Array<move> = [];
-
-  // find all possible moves
-  for (let i = SIZE - 1; i >= 0; i--) {
-    for (let j = SIZE - 1; j >= 0; j--) {
-      let result: Array<coor> = Search.SearchForReversiblePieces(i, j, getRival(currentPlayer), state);
-      if (result.length > 0) possibleMoves.push({pos: [i, j], reversibles: result});
-    }
-  }
+  // find all possible moves and their reversiable
+  const possibleMoves = Search.searchAvailableAuto(currentPlayer, state);
 
   if (possibleMoves.length === 0) {
     // no available move at current state. 
     // This means the rival can move again.
     return getScoreFromState_R(state, getRival(currentPlayer), iCounter-1);
   } else {
-    // general case. If we reach here, we must got several possible moves.
+    // general case. If we reach here, we must got at least one possible move.
     // Choose the one that can bring the maximum benefit(it depends on the identity of current player)
     const queue: Array<number> = [];
     for (let move of possibleMoves) {
@@ -151,7 +114,6 @@ const getScoreFromState_R = (state: gameState, currentPlayer: string, iCounter: 
       return queue.shift();
     }
   }
-
 }
 
 // 
@@ -187,7 +149,7 @@ const atEdge = (x: number, y: number): boolean => {
   return false;
 }
 
-const isFinalState = (state: gameState): boolean => {
+export const isFinalState = (state: gameState): boolean => {
 
   let Xs = 0;
   let Os = 0;

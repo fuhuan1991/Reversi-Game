@@ -1,22 +1,24 @@
-
 import React from 'react';
 import './style/game.scss';
 import Board from './Board';
 import Scores from './Scores.jsx';
 import Search from './search';
 import config from './config';
-import { pickLocation } from './auto';
+import { pickLocation, isFinalState } from './auto';
 import { getRival } from './util';
 
-type BOARD = Array<Array<string>>;
+
+type gameState = Array<Array<string | null>>;
+type coor = Array<number>; 
+type availableState = Array<Array<boolean>>;
 interface IProps {}
 
 interface IState {
-  _currentState: BOARD,
-  _initialization: boolean,
-  _single: boolean,
-  _currentAvailabeState: BOARD, // available locations
-  _isForX: boolean, // is current piece a X? 
+  _currentState: gameState,
+  _gameStarted: boolean,
+  _singleMode: boolean,
+  _currentAvailabeState: availableState, // available locations
+  _isForX: boolean, // is current player X? 
   _numberO: number, // the number of Os
   _numberX: number, // the number of Xs
   _gameFinished: boolean,
@@ -38,8 +40,25 @@ if (SIZE%2 !== 0) {
 
 class Game extends React.Component<IProps, IState> {
 
-  // setup the initial pieces on the board
-  initialCurrentState() {
+  constructor(props: any) {
+    super(props);
+    // const initialBoard = this.initializeGameState();
+    const initialBoard = this.initializeGameState_special();
+    this.state = {
+      _gameStarted: false,
+      _singleMode: true,
+      _currentState: initialBoard, // current location
+      _currentAvailabeState: this.initializeAvailabeState(initialBoard), // available locations
+      _isForX: false, // is current piece a X? 
+      _numberO: 2, // the number of Os
+      _numberX: 2, // the number of Xs
+      _gameFinished: false,
+      _doubleMove: false
+    };
+  }
+
+   // setup the initial pieces on the board
+   initializeGameState(): gameState {
   	let temp = Array(SIZE).fill(null);
   	let board = [];
   	for (let i=0; i<=SIZE-1; i++){
@@ -53,174 +72,151 @@ class Game extends React.Component<IProps, IState> {
     return board;
   }
 
+  initializeGameState_special() {
+    return config.set1;
+  }
+
   // calculate all the possible available positions 
-  initializeCurrentAvailabeState(initialBoard: BOARD) {
+  initializeAvailabeState(initialBoard: gameState) {
     let temp = Array(SIZE).fill(null);
   	let board = [];
   	for (let i=0; i<=SIZE-1; i++){
   		board[i] = temp.slice(0);
   	}
-
     const { availableState } = Search.searchAvailable('X', initialBoard);
-    for (let i = 0; i <= SIZE-1; i++) {
-      for (let j = 0; j <= SIZE-1; j++) {
-        if (availableState[i][j]) board[i][j] = true;
-      }
-    }
-
-    return board;
+    return availableState;
   }
 
-  constructor(props: any) {
-    super(props);
-    const initialBoard = this.initialCurrentState();
-    this.state = {
-      _initialization: true,
-      _single: true,
-      _currentState: initialBoard, // current location
-      _currentAvailabeState: this.initializeCurrentAvailabeState(initialBoard), // available locations
-      _isForX: false, // is current piece a X? 
-      _numberO: 2, // the number of Os
-      _numberX: 2, // the number of Xs
-      _gameFinished: false,
-      _doubleMove: false
-    };
+  handleModeSelection = (single: boolean) => {
+    this.setState({
+      _singleMode: single,
+      _gameStarted: true,
+    });
   }
 
-  handleClick(x: number,y: number) { 
-    // cannot place a piece on another one
+  // click event handler
+  handleClick(x: number, y: number) {
+    // check if the user clicled a valid position
     if (this.state._currentState[x][y] === 'O' || this.state._currentState[x][y] === 'X'){
+      // cannot place a piece on another one
       console.log('occupied!');
       return false;
     } else if(this.state._gameFinished){
       // cannot place a piece outside available zone
       console.log('game is over!');
       return false;
-    } else if(this.state._isForX && this.state._single) {
+    } else if(this.state._isForX && this.state._singleMode) {
       // in single mode, human player is (O)tail
       console.log('not your turn!');
       return false;
+    } else if(!this.state._currentAvailabeState[x][y]){
+      // no piece shall be reversed after this move
+      // then it is invalid move
+      console.log('invalid move!');
+      return false;
     }
-    if (this.state._currentAvailabeState[x][y]) this.land(x, y, this.state._single); 
+
+    const newState = this.land(x, y);
+    this.setUpForNextPlayer(newState);
   }
 
-  // put down a piece and change state
-  // If autoMove is true, computer shall be the next one to move
-  land (x: number, y: number, autoMove: boolean) {
-    let currentToken = this.state._isForX? 'X' : 'O';
-    let opponent = this.state._isForX? 'O':'X';
-    let tempState = this.state._currentState; // copy current board
-    let result;
-    let nextPlayersMoves;
-    let points;
-    let finishOrNot = false;
+  land(x: number, y: number): gameState {
+    let currentPlayer = this.state._isForX? 'X' : 'O';
+    let opponent = getRival(currentPlayer);
+    let tempState = this.state._currentState;
 
-    result = Search.SearchForReversiblePieces(x, y, opponent, tempState);
-    // change board state, record the current move
-    tempState[x][y] = currentToken;
-
-    // change board state, reverse opponent's pieces
-    for (let i = result.length - 1; i >= 0; i--) {
-      let temp_x = result[i][0];
-      let temp_y = result[i][1];
-      tempState[temp_x][temp_y] = currentToken;
-    };
-
-    // calculate the available locations for next player
-    nextPlayersMoves = Search.searchAvailable(currentToken, tempState);
-    // count piece numbers
-    points = Search.CaculatePoints(tempState);
-
-    // inverse side
-    let isXNext = !this.state._isForX;
-    let nextPlayersAvailabeState = nextPlayersMoves.availableState;
-    let doubleMove = false;
-
-    // check finish
-    if( (points.X + points.O) === 64){
-      // board full
-      finishOrNot = true;
-      autoMove = false;
-    } else if( nextPlayersMoves.noMoreMove ){
-      // After current player's move, next player cannot make a move.
-      // There are several different situations.
-      const currentPlayersMoves = Search.searchAvailable(getRival(currentToken), tempState);
-      if (currentPlayersMoves.noMoreMove) {
-        // both player cannot make any move, game over
-        finishOrNot = true;
-        autoMove = false;
-      } else {
-        // After player 1 made a move, player 2 cannot move, but player 1 can still make a move
-        // Thus, player 1 moves again
-        if (this.state._single) {
-          if (this.state._isForX) {
-            console.log('computer double move')
-            autoMove = true;
-            isXNext = this.state._isForX;
-            nextPlayersAvailabeState = currentPlayersMoves.availableState;
-            doubleMove = true;
-          } else {
-            console.log('human double move');
-            autoMove = false;
-            isXNext = this.state._isForX;
-            nextPlayersAvailabeState = currentPlayersMoves.availableState;
-            doubleMove = true;
-          }
-        } else {
-          isXNext = this.state._isForX;
-          nextPlayersAvailabeState = currentPlayersMoves.availableState;
-          doubleMove = true;
-        }
-      }
+    // We assume that there is at least one possible move.
+    // Otherwise, this method won't be called
+    let positionList: Array<coor> = Search.SearchForReversiblePieces(x, y, opponent, this.state._currentState);
+    
+    // add a new piece to the board and reverse opponent's pieces
+    tempState[x][y] = currentPlayer;
+    for (let pos of positionList) {
+      tempState[pos[0]][pos[1]] = currentPlayer;
     }
-
-    if (autoMove) {
-      const p = new Promise((resolve, reject) => {
-        setTimeout(() => resolve(), 400);
-      });
-      p.then(()=>{
-        this.computerMove();
-      });
-    }
-
-    // change state
     this.setState({
       _currentState: tempState,
-      _currentAvailabeState: nextPlayersAvailabeState,
-      _isForX: isXNext,
-      _numberO: points.O,
-      _numberX: points.X,
-      _gameFinished: finishOrNot,
-      _doubleMove: doubleMove,
     });
+    return tempState;
+  }
+
+  setUpForNextPlayer(newState: gameState) {
+    const currentPlayer = this.state._isForX? 'X' : 'O';
+    const nextPlayer = getRival(currentPlayer);
+    const nextPlayerMoves = Search.searchAvailable(currentPlayer, newState);
+    const currentPlayerMoves = Search.searchAvailable(nextPlayer, newState);
+    const point = Search.CaculatePoints(newState);
+
+    if (nextPlayerMoves.noMoreMove && currentPlayerMoves.noMoreMove) {
+      // No one can make further move, game over.
+      this.setState({
+        _gameFinished: true,
+        _numberO: point.O,
+        _numberX: point.X,
+      });
+    } else if (isFinalState(newState)) {
+      // No space for further move, game over.
+      this.setState({
+        _gameFinished: true,
+        _numberO: point.O,
+        _numberX: point.X,
+      });
+    } else if (nextPlayerMoves.noMoreMove) {
+      // next player cannot move, current player shall move again
+      this.setState({
+        _currentAvailabeState: currentPlayerMoves.availableState,
+        _numberO: point.O,
+        _numberX: point.X,
+        _doubleMove: true,
+      });
+
+      if (this.state._singleMode && currentPlayer === 'X') {
+        const p = new Promise((resolve, reject) => {
+          setTimeout(() => resolve(), 1000);
+        });
+        p.then(()=>{
+          this.computerMove(newState);
+        });
+      }
+    } else {
+      // general cases, toggle players
+      this.setState({
+        _currentAvailabeState: nextPlayerMoves.availableState,
+        _isForX: nextPlayer === 'X', 
+        _numberO: point.O,
+        _numberX: point.X,
+        _doubleMove: false
+      })
+
+      if (this.state._singleMode && nextPlayer === 'X') {
+        const p = new Promise((resolve, reject) => {
+          setTimeout(() => resolve(), 1000);
+        });
+        p.then(()=>{
+          this.computerMove(newState);
+        });
+      }
+    }
+  }
+
+  computerMove(state: gameState) {
+    const pos = pickLocation('O', state);
+    const newState = this.land(pos[0], pos[1]);
+    this.setUpForNextPlayer(newState);
   }
 
   clearBoard(){
-    let tempState = this.initialCurrentState();
-    let tempAvailabe = this.initializeCurrentAvailabeState(tempState);
-
+    let initialState = this.initializeGameState();
     this.setState({
-      _initialization: true,
-      _single: true,
-      _currentState: tempState,
-      _currentAvailabeState: tempAvailabe,
+      _gameStarted: false,
+      _singleMode: true,
+      _currentState: initialState,
+      _currentAvailabeState: this.initializeAvailabeState(initialState),
       _isForX: false,
       _numberO: 2,
       _numberX: 2,
       _gameFinished: false
     });
-  }
-
-  handleModeSelection = (single: boolean) => {
-    this.setState({
-      _single: single,
-      _initialization: false,
-    });
-  }
-
-  computerMove() {
-    const pos = pickLocation('O', this.state._currentState);
-    this.land(pos[0], pos[1], false);
   }
 
   render() {
@@ -244,13 +240,6 @@ class Game extends React.Component<IProps, IState> {
       status = "Current player: " + nextPlayer;
     }
 
-    ///////test////////////////////////////////////
-    // window.move = () => {
-    //   const pos = pickLocation('O', this.state._currentState);
-    //   this.land(pos[0], pos[1], false);
-    // }
-    ///////////////////////////////////////////////
-
     return (
       <React.Fragment>
         <div className="status white_font" >
@@ -261,7 +250,7 @@ class Game extends React.Component<IProps, IState> {
             <div className="status white_font" style={{display: 'inline-block'}}>{status}</div>
             <span className={this.state._isForX? 'coin_icon head' : 'coin_icon tail'}></span>
             <Board 
-              initialization = {this.state._initialization}
+              initialization = {!this.state._gameStarted}
               currentState={this.state._currentState} 
               currentAvailabeState={this.state._currentAvailabeState}
               gameFinished = {this.state._gameFinished}  
@@ -279,6 +268,6 @@ class Game extends React.Component<IProps, IState> {
       </React.Fragment>
     );
   }
-};
+}
 
 export default Game; 

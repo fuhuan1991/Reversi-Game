@@ -2,6 +2,9 @@ import config from './config';
 import { getRival } from './util';
 
 type coor = Array<number>; 
+type move = {pos: coor, reversibles: Array<coor>};
+type gameState = Array<Array<string | null>>;
+type availableState = Array<Array<boolean>>;
 
 let SIZE = config.size;
 if (SIZE < 8) {
@@ -18,6 +21,9 @@ if (SIZE % 2 !== 0) {
 
 const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 
+/*
+  * Check if a certain position is inside the board(is valid).
+  */
 export const isInBoundary = (o: Array<number>) => {
 	if (o[0] < 0 || o[0] >= SIZE) return false;
 	if (o[1] < 0 || o[1] >= SIZE) return false;
@@ -25,8 +31,12 @@ export const isInBoundary = (o: Array<number>) => {
 }
 
 var Search = {
-	// search for the pieces that can be reversed by a centain move
-  SearchForReversiblePieces: (x: number, y: number, opponent: string, currentState: Array<Array<string|null>>) => {
+  
+  /*
+  * Given a certain position, opponent and current state, calculate how many pieces can be reversed 
+  * by this move.
+  */
+  SearchForReversiblePieces: (x: number, y: number, opponent: string, currentState: Array<Array<string|null>>): Array<coor> => {
     const finalResult: Array<coor> = [];
     const initialTarget = [x, y];
     const friendly = getRival(opponent);
@@ -45,7 +55,7 @@ var Search = {
           reversibles.splice(reversibles.length, 0, ...temp);
           break;
         } else {
-          // encounter a opponent's piece
+          // encounter a opponent's piece. It is potential verersiable piece.
           temp.push([...target]);
         }
         target[0] += dir[0];
@@ -57,21 +67,28 @@ var Search = {
     return finalResult;
   },
 
-  // Search all positions, find out the ones you can make your next move.
-	searchAvailable:function(opponent: string, currentState: Array<Array<string|null>>){
+  /*
+  * Search all positions, find out the ones you can make your next move. 
+  * Return the available positions as a 2D array.
+  */
+	searchAvailable: function(opponent: string, currentState: gameState) {
 
 		let noMoreMove = true;
 
 		let temp = Array(SIZE).fill(null);
-	  	let availableState = [];
-	  	for (let i=0; i<=SIZE-1; i++){
-	  		availableState[i] = temp.slice(0);
-	  	}
+    let availableState = [];
+    for (let i=0; i<=SIZE-1; i++){
+      availableState[i] = temp.slice(0);
+    }
 
 		for (let i = SIZE - 1; i >= 0; i--) {
 			for (let j = SIZE - 1; j >= 0; j--) {
-        let result = this.SearchForReversiblePieces(i,j,opponent,currentState);
-        if (result.length > 0 && !currentState[i][j]) {
+
+        if (currentState[i][j] !== null) continue;
+
+        let result = this.SearchForReversiblePieces(i, j, opponent, currentState);
+
+        if (result.length > 0) {
           availableState[i][j] = true;
 					noMoreMove = false;
         }
@@ -82,7 +99,26 @@ var Search = {
 			availableState: availableState,
 			noMoreMove: noMoreMove
 		};
-	},
+  },
+  
+
+  /*
+  * Search all positions, find out the ones you can make your next move. 
+  * Return all the available moves in a list
+  */
+  searchAvailableAuto: function(currentPlayer: string, state: gameState): Array<move> {
+    const possibleMoves: Array<move> = [];
+    for (let i = 0; i < SIZE; i++) {
+      for (let j = 0; j < SIZE; j++) {
+        if (state[i][j] !== null) continue;
+        let reversibles = Search.SearchForReversiblePieces(i, j, getRival(currentPlayer), state);
+        if (reversibles.length > 0) {
+          possibleMoves.push({pos: [i, j], reversibles: reversibles});
+        }
+      }
+    }
+    return possibleMoves;
+  },
 
 	CaculatePoints:function(currentState: Array<Array<string|null>>){
 		let points = {
