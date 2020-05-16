@@ -29,6 +29,7 @@ export const pickLocation = (opponent: string, state: gameState): coor => {
   let maxScore: number = -Infinity;
   let finalMove: coor = [0, 0];
   let currentPlayer: string = getRival(opponent);
+
   const possibleMoves: Array<move> = Search.searchAvailableAuto(currentPlayer, state);
 
   if (possibleMoves.length === 1) {
@@ -36,11 +37,15 @@ export const pickLocation = (opponent: string, state: gameState): coor => {
     return possibleMoves[0].pos;
   } else {
     for (let move of possibleMoves) {
+      // console.log(move.pos)
       let x = move.pos[0];
       let y = move.pos[1];
 
       // If there is corner to grab, grab it.
-      if (atCorner(x, y)) return [x, y];
+      if (atCorner(x, y)) {
+        finalMove = [x, y];
+        break;
+      }
       // generate new state
       const newState: gameState = cloneState(state);
       for (let p of move.reversibles) {
@@ -48,15 +53,16 @@ export const pickLocation = (opponent: string, state: gameState): coor => {
       }
       newState[x][y] = currentPlayer;
       // use recurive function to calculate score
-      let score = getScoreFromState_R(newState, currentPlayer, 3);
-
+      let score = getScoreFromState_R(newState, opponent, 3);
+      // console.log(score)
       if (score > maxScore) {
         maxScore = score;
         finalMove = [x, y];
       }
     }
   }
-  console.log(finalMove)
+  // console.log('final move: ' + finalMove)
+  // console.log('------------------')
   return finalMove;
 }
 
@@ -74,6 +80,8 @@ const getScoreFromState_S = (state: gameState): number => {
 }
 
 const getScoreFromState_R = (state: gameState, currentPlayer: string, iCounter: number): any => {
+  // console.log('getScoreFromState_R')
+  // console.log(state, currentPlayer, iCounter);
   if (iCounter === 0 || isFinalState(state)) {
     return getScoreFromState_S(state);
   }

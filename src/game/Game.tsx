@@ -172,7 +172,7 @@ class Game extends React.Component<IProps, IState> {
 
       if (this.state._singleMode && currentPlayer === 'X') {
         const p = new Promise((resolve, reject) => {
-          setTimeout(() => resolve(), 1000);
+          setTimeout(() => resolve(), config.wait);
         });
         p.then(()=>{
           this.computerMove(newState);
@@ -190,7 +190,7 @@ class Game extends React.Component<IProps, IState> {
 
       if (this.state._singleMode && nextPlayer === 'X') {
         const p = new Promise((resolve, reject) => {
-          setTimeout(() => resolve(), 1000);
+          setTimeout(() => resolve(), config.wait);
         });
         p.then(()=>{
           this.computerMove(newState);
