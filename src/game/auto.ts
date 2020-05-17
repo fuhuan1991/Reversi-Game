@@ -66,7 +66,11 @@ export const pickLocation = (opponent: string, state: gameState): coor => {
   return finalMove;
 }
 
-// score is number of X's(head) - number of O's(tail) 
+/*
+* Calculate the score from current state
+* The stability of every piece is considered 
+* This is a static analysis, so no future decision is involved
+*/ 
 const getScoreFromState_S = (state: gameState): number => {
   let Xs = 0;
   let Os = 0;
@@ -82,6 +86,10 @@ const getScoreFromState_S = (state: gameState): number => {
   return Xs - Os + StabilityScore/2;
 }
 
+/*
+* Calculate the stability of every piece 
+* This is a test tool(called only from console)
+*/ 
 export const stabilityAnalysis = (state: gameState) => {
   const result = [];
   for (let i = 0; i < SIZE; i++) {
@@ -95,6 +103,12 @@ export const stabilityAnalysis = (state: gameState) => {
   return result;
 }
 
+/*
+* Calculate the score from current state
+* This is a recursive analysis, so future decision is involved
+* iCounter is iterator counter. If iCounter is 0, run static analysis
+* otherwise, analysis the score recursively with mini-max algorithm.
+*/ 
 const getScoreFromState_R = (state: gameState, currentPlayer: string, iCounter: number): any => {
   // console.log('getScoreFromState_R')
   // console.log(state, currentPlayer, iCounter);
@@ -140,7 +154,6 @@ const getScoreFromState_R = (state: gameState, currentPlayer: string, iCounter: 
   }
 }
 
-// 
 const cloneState = (state: gameState) => {
 
   const result = new Array(SIZE);
