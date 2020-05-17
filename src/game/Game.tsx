@@ -4,7 +4,7 @@ import Board from './Board';
 import Scores from './Scores.jsx';
 import Search from './search';
 import config from './config';
-import { pickLocation, isFinalState } from './auto';
+import { pickLocation, isFinalState, stabilityAnalysis } from './auto';
 import { getRival } from './util';
 
 
@@ -56,6 +56,14 @@ class Game extends React.Component<IProps, IState> {
       _doubleMove: false
     };
   }
+
+  componentDidMount() {
+    (window as any).SA = () => {
+      let result = stabilityAnalysis(this.state._currentState);
+      console.log(result);
+    }
+  }
+
 
    // setup the initial pieces on the board
    initializeGameState(): gameState {
@@ -127,7 +135,7 @@ class Game extends React.Component<IProps, IState> {
 
     // We assume that there is at least one possible move.
     // Otherwise, this method won't be called
-    let positionList: Array<coor> = Search.SearchForReversiblePieces(x, y, opponent, this.state._currentState);
+    let positionList: Array<coor> = Search.searchForReversiblePieces(x, y, opponent, this.state._currentState);
     
     // add a new piece to the board and reverse opponent's pieces
     tempState[x][y] = currentPlayer;

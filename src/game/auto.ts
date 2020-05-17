@@ -53,7 +53,7 @@ export const pickLocation = (opponent: string, state: gameState): coor => {
       }
       newState[x][y] = currentPlayer;
       // use recurive function to calculate score
-      let score = getScoreFromState_R(newState, opponent, 3);
+      let score = getScoreFromState_R(newState, opponent, 4);
       // console.log(score)
       if (score > maxScore) {
         maxScore = score;
@@ -70,13 +70,29 @@ export const pickLocation = (opponent: string, state: gameState): coor => {
 const getScoreFromState_S = (state: gameState): number => {
   let Xs = 0;
   let Os = 0;
+  let StabilityScore = 0;
+
   for (let i = 0; i < SIZE; i++) {
     for (let j = 0; j < SIZE; j++) {
       if (state[i][j] === 'X') Xs++;
       if (state[i][j] === 'O') Os++;
+      StabilityScore += Search.getSecureAxis(i, j, 'X', state);
     }
   }
-  return Xs - Os;
+  return Xs - Os + StabilityScore/2;
+}
+
+export const stabilityAnalysis = (state: gameState) => {
+  const result = [];
+  for (let i = 0; i < SIZE; i++) {
+    result.push(new Array(SIZE).fill(0));
+  }
+  for (let i = 0; i < SIZE; i++) {
+    for (let j = 0; j < SIZE; j++) {
+      result[i][j] = Search.getSecureAxis(i, j, 'O', state);
+    }
+  }
+  return result;
 }
 
 const getScoreFromState_R = (state: gameState, currentPlayer: string, iCounter: number): any => {
