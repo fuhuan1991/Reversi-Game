@@ -2,6 +2,7 @@
 export default {
 	size: 8,
 	wait: 300, // millisecond
+	iterations: 5,
 	set1: [
 		['X', 'X', null, null, null, 'O', 'O', 'O'],
 		['X', 'O', null, null, null, null, 'O', 'O'],

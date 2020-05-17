@@ -5,6 +5,7 @@ import Search from './search';
 type coor = Array<number>;
 type move = {pos: coor, reversibles: Array<coor>};
 type gameState = Array<Array<string | null>>;
+type record = {type: string, value: number};
 
 
 let SIZE = config.size;
@@ -19,6 +20,8 @@ if (SIZE % 2 !== 0) {
   console.log('size must be an even number');
   SIZE = 8;
 }
+
+let ITERATION = config.iterations; 
 
 /*
  * Given a state and an opponent, choice a best move.
@@ -53,7 +56,7 @@ export const pickLocation = (opponent: string, state: gameState): coor => {
       }
       newState[x][y] = currentPlayer;
       // use recurive function to calculate score
-      let score = getScoreFromState_R(newState, opponent, 4);
+      let score = getScoreFromState_R(newState, opponent, ITERATION, {type: 'X', value: maxScore});
       // console.log(score)
       if (score > maxScore) {
         maxScore = score;
@@ -109,7 +112,7 @@ export const stabilityAnalysis = (state: gameState) => {
 * iCounter is iterator counter. If iCounter is 0, run static analysis
 * otherwise, analysis the score recursively with mini-max algorithm.
 */ 
-const getScoreFromState_R = (state: gameState, currentPlayer: string, iCounter: number): any => {
+const getScoreFromState_R = (state: gameState, currentPlayer: string, iCounter: number, history: record): any => {
   // console.log('getScoreFromState_R')
   // console.log(state, currentPlayer, iCounter);
   if (iCounter === 0 || isFinalState(state)) {
@@ -118,16 +121,19 @@ const getScoreFromState_R = (state: gameState, currentPlayer: string, iCounter: 
   // find all possible moves and their reversiable
   const possibleMoves = Search.searchAvailableAuto(currentPlayer, state);
 
+
   if (possibleMoves.length === 0) {
     // no available move at current state. 
     // This means the rival can move again.
-    return getScoreFromState_R(state, getRival(currentPlayer), iCounter-1);
+    return getScoreFromState_R(state, getRival(currentPlayer), iCounter-1, history);
   } else {
     // general case. If we reach here, we must got at least one possible move.
     // Choose the one that can bring the maximum benefit(it depends on the identity of current player)
-    const queue: Array<number> = [];
+    let min = Infinity;
+    let max = -Infinity;
     for (let move of possibleMoves) {
-      let value = 0;
+
+      // corner grab, special case
       if (atCorner(move.pos[0], move.pos[1])) {
         if (currentPlayer === 'X') {
           return 999;
@@ -135,21 +141,40 @@ const getScoreFromState_R = (state: gameState, currentPlayer: string, iCounter: 
           return -999;
         }
       }
+
+      // alpha-beta pruning
+      if (currentPlayer === 'X' && history.type === 'O') {
+        if (max >= history.value) break;
+      } else if (currentPlayer === 'O' && history.type === 'X') {
+        if (min <= history.value) break;
+      } 
+
+      // generate new state
       const newState: gameState = cloneState(state);
       for (let p of move.reversibles) {
         newState[p[0]][p[1]] = currentPlayer;
       }
       newState[move.pos[0]][move.pos[1]] = currentPlayer;
-      value += getScoreFromState_R(newState, getRival(currentPlayer), iCounter-1);
-      queue.push(value);
+
+      // calculate score of a new state(calculate the value of a child node)
+      let value = getScoreFromState_R(newState, 
+                                      getRival(currentPlayer), 
+                                      iCounter-1, 
+                                      {type: currentPlayer, value: currentPlayer === 'X'? max : min});
+
+      if (currentPlayer === 'X') {
+        // max node
+        max = Math.max(max, value);
+      } else {
+        // min node
+        min = Math.min(min, value);
+      }
     }
 
-    queue.sort((a, b) => a - b);
-
     if (currentPlayer === 'X') {
-      return queue.pop();
+      return max;
     } else {
-      return queue.shift();
+      return min;
     }
   }
 }

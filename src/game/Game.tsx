@@ -42,8 +42,8 @@ class Game extends React.Component<IProps, IState> {
 
   constructor(props: any) {
     super(props);
-    // const initialBoard = this.initializeGameState();
-    const initialBoard = this.initializeGameState_special();
+    const initialBoard = this.initializeGameState();
+    // const initialBoard = this.initializeGameState_special();
     this.state = {
       _gameStarted: false,
       _singleMode: true,
