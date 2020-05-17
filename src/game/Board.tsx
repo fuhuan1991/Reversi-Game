@@ -62,8 +62,17 @@ class Board extends React.Component<PropsType> {
   }
 
   generateFinishPopup() {
-    const winner = this.props.number_of_O > this.props.number_of_X ? 'tail' : 'head';
+    if (this.props.number_of_O === this.props.number_of_X) {
+      return (
+        <div className="mask">
+          <div className="finish_popup tie">
+            <span>Tie!</span>
+          </div>
+        </div>
+      );
+    }
 
+    const winner = this.props.number_of_O > this.props.number_of_X ? 'tail' : 'head';
     return(
       <div className="mask">
         <div className="finish_popup">

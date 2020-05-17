@@ -6,6 +6,10 @@ import Search from './search';
 import config from './config';
 import { pickLocation, isFinalState, stabilityAnalysis } from './auto';
 import { getRival } from './util';
+import { message, Spin } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
+
+const antIcon = <ReloadOutlined style={{ fontSize: 24 }} spin />;
 
 
 type gameState = Array<Array<string | null>>;
@@ -64,9 +68,8 @@ class Game extends React.Component<IProps, IState> {
     }
   }
 
-
    // setup the initial pieces on the board
-   initializeGameState(): gameState {
+  initializeGameState(): gameState {
   	let temp = Array(SIZE).fill(null);
   	let board = [];
   	for (let i=0; i<=SIZE-1; i++){
@@ -186,6 +189,9 @@ class Game extends React.Component<IProps, IState> {
           this.computerMove(newState);
         });
       }
+
+      const doubleMovePlayer = this.state._isForX? "head" : "tail";
+      message.info(doubleMovePlayer + ' player combo!', 2);
     } else {
       // general cases, toggle players
       this.setState({
@@ -223,7 +229,8 @@ class Game extends React.Component<IProps, IState> {
       _isForX: false,
       _numberO: 2,
       _numberX: 2,
-      _gameFinished: false
+      _gameFinished: false,
+      _doubleMove: false,
     });
   }
 
@@ -233,16 +240,16 @@ class Game extends React.Component<IProps, IState> {
 
     if (this.state._gameFinished){
       if (this.state._numberO > this.state._numberX){
-        status = "winner is tail!";
+        status = "Winner is tail!";
       } else if ( this.state._numberO < this.state._numberX ){
-        status = "winner is head!";
+        status = "Winner is head!";
       } else {
-        status = "want a second round?";
+        status = "Another round?";
       }
     } else if (this.state._doubleMove) {
       const doubleMovePlayer = this.state._isForX? "head" : "tail";
       const theOther = this.state._isForX? "tail" : "head";
-      status = `${theOther} has no moves, so ${doubleMovePlayer} moves again.`;
+      status = `${theOther} has no valid moves, so ${doubleMovePlayer} moves again.`;
     } else{
       nextPlayer = this.state._isForX? "head" : "tail";
       status = "Current player: " + nextPlayer;
@@ -250,13 +257,13 @@ class Game extends React.Component<IProps, IState> {
 
     return (
       <React.Fragment>
-        <div className="status white_font" >
-          If you play alone, you play as tail and you move first, computer play as head.
-        </div>
         <div className="game">
           <div className="game-board">
-            <div className="status white_font" style={{display: 'inline-block'}}>{status}</div>
+            <div className="status white_font" style={{display: 'inline-block'}}>
+              {status}
+            </div>
             <span className={this.state._isForX? 'coin_icon head' : 'coin_icon tail'}></span>
+            {!this.state._gameFinished && this.state._singleMode && this.state._isForX && <Spin indicator={antIcon} />}
             <Board 
               initialization = {!this.state._gameStarted}
               currentState={this.state._currentState} 
@@ -268,10 +275,24 @@ class Game extends React.Component<IProps, IState> {
               handleModeSelection={this.handleModeSelection} 
             />
             <Scores x_number={this.state._numberX} o_number={this.state._numberO} />
-            <div className="status white_font">number of "tail"s: {this.state._numberO}</div>
-            <div className="status white_font">number of "head"s: {this.state._numberX}</div>
           </div>
           <button className='clear' onClick={() => this.clearBoard()}>RESET</button>
+        </div>
+        <div className="status white_font" >
+          <ul className="game-info">
+            <li>Players take turns placing pieces on the board. 
+              After a move, any pieces of the opponent's color that are in the middle of newly placed piece and 
+              other current player's pieces will be turned to current player's piece.</li>
+            <li>If a move cannot reverse opponent's pieces, then it is invalid. The green zone on the 
+              board shows all the valid moves current player can perform</li>
+            <li>Players take alternate turns. If one player can not make a valid move, play passes back to the other player. 
+              When neither player can move, the game ends. This occurs when the grid has filled up or when neither player can 
+              legally place a piece in any of the remaining squares.</li>
+            <li>The object of the game is to have the majority of disks turned to display your color when the 
+              last playable empty square is filled.</li>
+            <li>If you play alone, you play as tail and you move first, computer play as head.</li>
+            <li>Check <a href="https://en.wikipedia.org/wiki/Reversi">here</a> for additional information</li>
+          </ul>
         </div>
       </React.Fragment>
     );
