@@ -3,7 +3,7 @@ export default {
 	size: 8,
 	wait: 300, // millisecond
 	iterations: 4,
-	set1: [
+	set2: [
 		['O', null, null, null, 'X', 'X', 'X', null],
 		['X', null, null, null, null, null, null, null],
 		[null, null, null, null, null, null, null, null],
@@ -13,7 +13,7 @@ export default {
 		[null, null, null, null, null, null, null, null],
 		[null, null, null, null, null, null, null, null],
 	],
-	set2: [
+	set1: [
 		['X', 'X', null, 'X', null, 'O', 'O', 'O'],
 		['X', null, null, 'O', null, null, 'O', 'O'],
 		['X', null, null, null, null, null, null, 'O'],

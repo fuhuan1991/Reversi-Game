@@ -20,12 +20,12 @@
       background-color: rgba(0, 0, 0, 0.4);
       padding-top: 24px;
       margin: auto;
-      width: 500px;
+      width: 75%;
       height: 300px;
       border-radius: 10px;
       margin-top: 165px;
       color: #cacaca;
-      font-size: 42px;
+      font-size: 34px;
       font-weight: bolder;
 
       span {
@@ -55,11 +55,11 @@
 
       .selection{
         text-align: center;
-        width: 300px;
+        width: 60%;
         background-color: rgba(57, 181, 71, 0.5);
-        margin: 50px auto;
+        margin: 60px auto;
         cursor: pointer;
-        line-height: 60px;
+        line-height: 2.4rem;
         user-select: none;
         border-radius: 10px;
       }
@@ -111,7 +111,6 @@
   transition: background 0.4s;
   border: 2px solid hsla(0, 25%, 38%, 0.30);
   float: left;
-  font-size: 28px;
   font-weight: bold;
   line-height: 34px;
   height: 80px;
@@ -160,7 +159,6 @@
 .game {
   display: flex;
   flex-direction: row;
-  min-height: 700px;
   width: 900px;
   position: relative;
   margin: auto;
@@ -236,6 +234,72 @@
   margin-bottom: 60px;
 }
 
+.mobile-status{
+  display: none;
+}
+
+@media (max-width: 768px){
+  .ant-message{
+    top: 0px!important;
+    left: 0px!important; 
+  }
+
+  .main{
+    padding-left: 4px!important;
+    padding-right: 4px!important;
+
+    .status.white_font{
+      font-size: 13px;
+    }
+  }
+  .game{
+    width: 100%;
+
+    .game-board{
+      width: 100%;
+    }
+    .clear{
+      left: 10px;
+      bottom: -54px;
+    }
+    .board{
+      border: none;
+      margin-left: .14em;
+      margin-right: .14em;
+      .square{
+        width: 1.2em;
+        height: 1.2em;
+      }
+      .finish_popup{
+        margin-top: 3.6em;
+        height: 200px;
+        font-size: .5em;
+        .selection{
+          margin: 1.4em auto;
+        }
+        .head{
+          height: 6em;
+          width: 6em;
+        }
+      }
+      .finish_popup.tie{
+        font-size: .5em;
+      }
+    }
+  }
+  .game .scores {
+    display: none;
+  }
+  .game-info{
+    width: auto;
+    margin-top: 0px;
+  }
+  .mobile-status{
+    text-align: center;
+    display: block;
+    margin-top: 60px;
+  }
+}
 
 
 

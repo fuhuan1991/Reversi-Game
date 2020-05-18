@@ -66,6 +66,8 @@ class Game extends React.Component<IProps, IState> {
       let result = stabilityAnalysis(this.state._currentState);
       console.log(result);
     }
+    let board = document.querySelector('.board');
+    (board as any).style.fontSize = (window.innerWidth/10) + 'px';
   }
 
    // setup the initial pieces on the board
@@ -277,6 +279,9 @@ class Game extends React.Component<IProps, IState> {
             <Scores x_number={this.state._numberX} o_number={this.state._numberO} />
           </div>
           <button className='clear' onClick={() => this.clearBoard()}>RESET</button>
+        </div>
+        <div className="white_font mobile-status" >
+          H {this.state._numberX} : {this.state._numberO} T
         </div>
         <div className="status white_font" >
           <ul className="game-info">
