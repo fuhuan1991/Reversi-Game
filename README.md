@@ -1,4 +1,5 @@
 # Reversi Game
+https://fuhuan1991.github.io/Reversi-Game/index.html
 
 ## Intro
 - This is a little game based on Reversi.
