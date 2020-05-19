@@ -18,6 +18,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "move": "mv build/* docs",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -29,5 +30,6 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "homepage": "https://fuhuan1991.github.io/Reversi-Game"
 }
