@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/Reversi-Game/precache-manifest.882131ad8e80d09cab939a2c685835c8.js"
+  "/Reversi-Game/precache-manifest.6d667f7bb6e51e2bdef2030fd886dc13.js"
 );
 
 workbox.clientsClaim();

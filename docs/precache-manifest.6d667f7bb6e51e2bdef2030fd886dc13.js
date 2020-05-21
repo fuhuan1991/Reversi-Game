@@ -1,11 +1,11 @@
 self.__precacheManifest = [
   {
-    "revision": "00ffa8688e6d2de3c437",
+    "revision": "ce808f126802d460c498",
     "url": "/Reversi-Game/static/css/main.47fcdeeb.chunk.css"
   },
   {
-    "revision": "00ffa8688e6d2de3c437",
-    "url": "/Reversi-Game/static/js/main.00ffa868.chunk.js"
+    "revision": "ce808f126802d460c498",
+    "url": "/Reversi-Game/static/js/main.ce808f12.chunk.js"
   },
   {
     "revision": "285b4a0b3bda3f7341ca",
@@ -32,7 +32,7 @@ self.__precacheManifest = [
     "url": "/Reversi-Game/static/media/h.6fece29b.png"
   },
   {
-    "revision": "a76290b884ae09454d8255c7c5dd394a",
+    "revision": "0079bb6c5184a8fd4d735c6bc3473a47",
     "url": "/Reversi-Game/index.html"
   }
 ];

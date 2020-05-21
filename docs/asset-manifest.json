@@ -1,16 +1,16 @@
 {
   "main.css": "/Reversi-Game/static/css/main.47fcdeeb.chunk.css",
-  "main.js": "/Reversi-Game/static/js/main.00ffa868.chunk.js",
-  "main.js.map": "/Reversi-Game/static/js/main.00ffa868.chunk.js.map",
+  "main.js": "/Reversi-Game/static/js/main.ce808f12.chunk.js",
+  "main.js.map": "/Reversi-Game/static/js/main.ce808f12.chunk.js.map",
   "static/css/1.78f8f860.chunk.css": "/Reversi-Game/static/css/1.78f8f860.chunk.css",
   "static/js/1.285b4a0b.chunk.js": "/Reversi-Game/static/js/1.285b4a0b.chunk.js",
   "static/js/1.285b4a0b.chunk.js.map": "/Reversi-Game/static/js/1.285b4a0b.chunk.js.map",
   "runtime~main.js": "/Reversi-Game/static/js/runtime~main.e035630b.js",
   "runtime~main.js.map": "/Reversi-Game/static/js/runtime~main.e035630b.js.map",
   "static/media/game.scss": "/Reversi-Game/static/media/h.6fece29b.png",
-  "static/css/main.47fcdeeb.chunk.css.map": "/Reversi-Game/static/css/main.47fcdeeb.chunk.css.map",
   "static/css/1.78f8f860.chunk.css.map": "/Reversi-Game/static/css/1.78f8f860.chunk.css.map",
+  "static/css/main.47fcdeeb.chunk.css.map": "/Reversi-Game/static/css/main.47fcdeeb.chunk.css.map",
   "index.html": "/Reversi-Game/index.html",
-  "precache-manifest.882131ad8e80d09cab939a2c685835c8.js": "/Reversi-Game/precache-manifest.882131ad8e80d09cab939a2c685835c8.js",
+  "precache-manifest.6d667f7bb6e51e2bdef2030fd886dc13.js": "/Reversi-Game/precache-manifest.6d667f7bb6e51e2bdef2030fd886dc13.js",
   "service-worker.js": "/Reversi-Game/service-worker.js"
 }
